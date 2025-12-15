@@ -28,16 +28,7 @@
 
 #include <dk_buttons_and_leds.h>
 
-// ====================================================================
-// NOVO: Definição de UUID Customizado de 128-bit
-// Usaremos este UUID no pacote de Scan Response (sd).
-// UUID Exemplo: 12345678-5678-3412-1234-9ABCDEF0 (No formato LSB...MSB)
 #define CUSTOM_SERVICE_UUID_BYTES 0xF0, 0xDE, 0xBC, 0x9A, 0x34, 0x12, 0x56, 0x78, 0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-
-// Nota: O serviço LBS (BT_UUID_LBS_VAL) ainda será registrado,
-// mas apenas o UUID customizado será anunciado para descoberta.
-// ====================================================================
-
 
 #define DEVICE_NAME             CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN         (sizeof(DEVICE_NAME) - 1)
@@ -59,18 +50,14 @@ static const struct bt_data ad[] = {
     BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),
 };
 
-// ====================================================================
-// MODIFICADO: Usando o UUID Customizado no Scan Response Data (sd)
-// ====================================================================
+
 static const struct bt_data sd[] = {
     BT_DATA_BYTES(BT_DATA_UUID128_ALL, CUSTOM_SERVICE_UUID_BYTES),
 };
-// ====================================================================
 
 
 static void adv_work_handler(struct k_work *work)
 {
-    // Usamos a macro BT_LE_ADV_CONN_FAST_2, que estava na versão original.
     int err = bt_le_adv_start(BT_LE_ADV_CONN_FAST_2, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
 
     if (err) {
