@@ -110,6 +110,26 @@ static void format_epoch_ms_brt(int64_t epoch_ms, char *out, size_t out_sz)
              (int)msec);
 }
 
+static void start_advertising(void);
+
+/* reinício de advertising fora do callback */
+static void adv_restart_work_handler(struct k_work *work);
+static struct k_work adv_restart_work;
+
+
+
+static void adv_restart_work_handler(struct k_work *work)
+{
+    ARG_UNUSED(work);
+
+    /* garante que não ficou preso */
+    (void)bt_le_adv_stop();
+    k_sleep(K_MSEC(50));
+
+    start_advertising();
+}
+
+
 /* ============================================================================
  * 3) Notify de STATUS (1524)
  * ========================================================================== */
@@ -377,6 +397,31 @@ static void connected(struct bt_conn *conn, uint8_t err)
     LOG_INF("Conectado!");
 }
 
+static void start_advertising(void)
+{
+    int err;
+
+    struct bt_le_adv_param adv_param = *BT_LE_ADV_PARAM(
+        BT_LE_ADV_OPT_CONN | BT_LE_ADV_OPT_USE_IDENTITY,
+        BT_GAP_ADV_FAST_INT_MIN_2,
+        BT_GAP_ADV_FAST_INT_MAX_2,
+        NULL
+    );
+
+    err = bt_le_adv_start(&adv_param, ad, ARRAY_SIZE(ad), NULL, 0);
+
+    if (err == -EALREADY) {
+        LOG_INF("Advertising ja estava ativo.");
+        return;
+    }
+
+    if (err) {
+        LOG_ERR("Advertising start falhou (err=%d)", err);
+    } else {
+        LOG_INF("Advertising ON.");
+    }
+}
+
 static void disconnected(struct bt_conn *conn, uint8_t reason)
 {
     ARG_UNUSED(conn);
@@ -387,7 +432,9 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
     }
 
     lock_notify_enabled = false;
-    LOG_INF("Desconectado (reason=%u)", reason);
+    LOG_INF("Desconectado (reason=%u) -> reiniciando advertising", reason);
+
+    k_work_submit(&adv_restart_work);
 }
 
 BT_CONN_CB_DEFINE(conn_callbacks) = {
@@ -401,23 +448,19 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 static void bt_ready(int err)
 {
     if (err) {
-        LOG_ERR("bt_enable falhou: %d", err);
+        LOG_ERR("Bluetooth falhou ao iniciar: %d", err);
         return;
     }
 
+    /* Carrega as chaves de identidade e o tempo do relógio da Flash */
     if (IS_ENABLED(CONFIG_SETTINGS)) {
         settings_load();
     }
 
-    struct bt_le_adv_param adv_param = *BT_LE_ADV_PARAM(
-        BT_LE_ADV_OPT_CONN | BT_LE_ADV_OPT_USE_IDENTITY,
-        BT_GAP_ADV_FAST_INT_MIN_2,
-        BT_GAP_ADV_FAST_INT_MAX_2,
-        NULL
-    );
+    /* Inicia o Advertising de forma simplificada e robusta */
+    start_advertising();
+    LOG_INF("Bluetooth Ativo! Aguardando conexao...");
 
-    err = bt_le_adv_start(&adv_param, ad, ARRAY_SIZE(ad), NULL, 0);
-    LOG_INF("Advertising ON (err=%d) - pronto para comandos!", err);
 }
 
 /* ============================================================================
@@ -425,7 +468,9 @@ static void bt_ready(int err)
  * ========================================================================== */
 int main(void)
 {
+    k_work_init(&adv_restart_work, adv_restart_work_handler);
     k_work_init(&lock_notify_work, lock_notify_work_handler);
+
 
     int err = timekeeper_init();
     LOG_INF("timekeeper_init err=%d valid=%d", err, timekeeper_is_valid());
