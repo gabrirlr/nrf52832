@@ -11,6 +11,7 @@ project(peripheral_lbs_2)
 # NORDIC SDK APP START
 target_sources(app PRIVATE
   src/main.c
+  src/timekeeper.c
 )
 
 # NORDIC SDK APP END
