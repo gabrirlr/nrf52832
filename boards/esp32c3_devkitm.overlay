@@ -1,0 +1,29 @@
+/ {
+	aliases {
+		led0 = &user_led0;
+		led1 = &user_led1;
+		led2 = &user_led2;
+		sw0  = &user_button0;
+	};
+
+	/* Exemplo: LEDs externos em GPIOs */
+	user_led0: led_0 {
+		gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
+		label = "RUN_LED";
+	};
+
+	user_led1: led_1 {
+		gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+		label = "CONN_LED";
+	};
+
+	user_led2: led_2 {
+		gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+		label = "USER_LED";
+	};
+
+	user_button0: button_0 {
+		gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		label = "USER_BUTTON";
+	};
+};
