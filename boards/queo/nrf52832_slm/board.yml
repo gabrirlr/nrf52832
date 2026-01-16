@@ -1,0 +1,5 @@
+board:
+  name: nrf52832_slm
+  vendor: queo
+  socs:
+    - name: nrf52832

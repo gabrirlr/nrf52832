@@ -1,0 +1,10 @@
+identifier: nrf52832_slm/nrf52832
+name: nrf52832_slm
+vendor: queo
+type: mcu
+arch: arm
+ram: 64
+flash: 512
+toolchain:
+  - zephyr
+supported: []
