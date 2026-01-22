@@ -47,7 +47,7 @@ static struct bt_uuid_128 time_sync_uuid = BT_UUID_INIT_128(UUID_TIME_SYNC_VAL);
 
 static uint8_t lock_state = 1; 
 static bool lock_notify_enabled = false;
-static char lock_status_buf[16] = "LOCKED";
+static char lock_status_buf[32] = "LOCKED";
 static struct bt_conn *current_conn = NULL;
 
 static struct k_work lock_notify_work;
@@ -185,9 +185,23 @@ static ssize_t on_write_ctrl(struct bt_conn *conn, const struct bt_gatt_attr *at
     char cmd[16] = {0};
     memcpy(cmd, buf, MIN(len, sizeof(cmd) - 1));
     str_to_upper(cmd);
+    // snprintk(lock_status_buf, sizeof(lock_status_buf), "RECEBIDO: %s", cmd);
+    
+    if(strstr(cmd, "LOCK")){
+        if(gpio_pin_get_dt(&ign_gpio) > 0){
+            strcpy(lock_status_buf, "RECEIVED"); 
+        } else {
+            strcpy(lock_status_buf, "LOCK");
+            update_lock(1);
+            
+        }
+        k_work_submit(&lock_notify_work);
+    }
+     
+    k_work_submit(&lock_notify_work);
     if (strstr(cmd, "TOGGLE")) update_lock(!lock_state);
     else if (strstr(cmd, "UNLOCK")) update_lock(0);
-    else if (strstr(cmd, "LOCK")) update_lock(1);
+    //else if (strstr(cmd, "LOCK")) update_lock(1);
     return len;
 }
 
