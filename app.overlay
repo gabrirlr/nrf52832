@@ -1,0 +1,12 @@
+/* app.overlay */
+/ {
+	aliases {
+		led2 = &led2;       /* Relé (P0.03) */
+		ignition = &button0; /* Entrada de Ignição (P0.04) */
+	};
+};
+
+&button0 {
+	gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>; 
+	label = "IGN_INPUT";
+};
