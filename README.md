@@ -4,7 +4,7 @@ Este projeto implementa um sistema de trava inteligente via Bluetooth Low Energy
 
 ---
 
-## 🛠️ Arquitetura e Hardware
+##  Arquitetura e Hardware
 O firmware foi desenvolvido para ser multiplataforma, validado tanto no **nRF52832** quanto no **ESP32-C3**.
 
 **Abstração de Hardware:** Todos os periféricos são definidos via **Device Tree Aliases**, garantindo que o código C não possua pinagens fixas (*hard-coded*).
@@ -14,7 +14,7 @@ O firmware foi desenvolvido para ser multiplataforma, validado tanto no **nRF528
 
 ---
 
-## 🔐 Lógica de Segurança (Fail-Safe)
+##  Lógica de Segurança (Fail-Safe)
 A segurança é garantida por uma barreira lógica de software no controle de GPIO:
 
 1. **Interlock de Ignição:** O pino `P0.04` monitora a ignição. Se ativa, o comando de bloqueio é impedido para evitar acionamentos em movimento.
@@ -23,7 +23,7 @@ A segurança é garantida por uma barreira lógica de software no controle de GP
 
 ---
 
-## 🔵 Interface Bluetooth (GATT)
+##  Interface Bluetooth (GATT)
 **Service UUID:** `0x1523`
 
 | Característica | UUID | Descrição |
@@ -34,7 +34,7 @@ A segurança é garantida por uma barreira lógica de software no controle de GP
 
 ---
 
-## 🚀 Processo de Instalação e Gravação
+##  Processo de Instalação e Gravação
 Para o módulo personalizado nRF52832:
 1. **Compilação:** Utilize a extensão nRF Connect no VS Code.
 2. **Limpeza:** Realize o *Erase Chip* via **J-Flash Lite** para remover proteções de leitura.
